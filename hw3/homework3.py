@@ -3,7 +3,6 @@ import torchvision.transforms as transforms
 import numpy as np
 
 import environment
-from agent import Agent
 
 
 class Hw3Env(environment.BaseEnv):
@@ -112,7 +111,7 @@ class Hw3Env(environment.BaseEnv):
         return self._t >= self._max_timesteps
     
     def step(self, action):
-        action = action.clamp(-1, 1).cpu().numpy() * self._delta
+        action = action * self._delta
         ee_pos = self.data.site(self._ee_site).xpos[:2]
         target_pos = np.concatenate([ee_pos, [1.06]])
         target_pos[:2] = np.clip(target_pos[:2] + action, [0.25, -0.3], [0.75, 0.3])
@@ -128,53 +127,4 @@ class Hw3Env(environment.BaseEnv):
         else:  # If didn't realize the action
             truncated = True
         return state, reward, terminal, truncated
-
-
-    # def step(self, action):
-    #     action = action.clamp(-1, 1).cpu().numpy() * self._delta
-    #     ee_pos = self.data.site(self._ee_site).xpos[:2]
-    #     target_pos = np.concatenate([ee_pos, [1.06]])
-    #     target_pos[:2] = np.clip(target_pos[:2] + action, [0.25, -0.3], [0.75, 0.3])
-    #     self._set_ee_in_cartesian(target_pos, rotation=[-90, 0, 180], n_splits=30, threshold=0.04)
-    #     self._t += 1
-
-    #     state = self.high_level_state()
-    #     reward = self.reward()
-    #     terminal = self.is_terminal()
-    #     truncated = self.is_truncated()
-    #     return state, reward, terminal, truncated
-
-
-if __name__ == "__main__":
-    env = Hw3Env(render_mode="offscreen")
-    agent = Agent()
-    num_episodes = 10000
-
-    rews = []
-
-    for i in range(num_episodes):        
-        env.reset()
-        state = env.high_level_state()
-        done = False
-        cumulative_reward = 0.0
-        episode_steps = 0
-
-        while not done:
-            action = agent.decide_action(state)
-            next_state, reward, is_terminal, is_truncated = env.step(action[0])
-            agent.add_reward(reward)
-            cumulative_reward += reward
-            done = is_terminal or is_truncated
-            
-            state = next_state
-            episode_steps += 1
-
-        print(f"Episode={i}, reward={cumulative_reward}")
-        rews.append(cumulative_reward)
-        agent.update_model()
-
-    ## Save the model and the training statistics
-    torch.save(agent.model.state_dict(), "model.pt")
-    np.save("rews.npy", np.array(rews))
-        
 
