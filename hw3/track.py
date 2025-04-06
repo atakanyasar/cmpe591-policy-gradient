@@ -28,8 +28,8 @@ class Tracker:
                 reader = csv.reader(file)
                 next(reader, None)  # Skip header
                 for row in reader:
-                    self.rewards_history.append(float(row[1]))  # Cumulative reward
-                    self.rps_history.append(float(row[2]))      # RPS
+                    self.rewards_history.append(float(row[2]))  # Cumulative reward
+                    self.rps_history.append(float(row[3]))      # RPS
             self.episode_loaded = len(self.rewards_history)
 
     def start_timer(self, worker_id):
@@ -76,8 +76,8 @@ class Tracker:
             print("No training data to plot.")
             return
 
-        window_size_reward = 400
-        window_size_rps = 1200
+        window_size_reward = 100
+        window_size_rps = 300
 
         plt.figure(figsize=(24, 8))
 
@@ -96,7 +96,7 @@ class Tracker:
         plt.xlabel("Episodes")
         plt.ylabel("Cumulative Reward")
         plt.title("Training Progress - Reward")
-        plt.ylim(-0.25, 3)
+        # plt.ylim(-0.25, 3)
         plt.legend()
 
         # Rewards Per Step (RPS) Plot
@@ -106,7 +106,7 @@ class Tracker:
         plt.xlabel("Episodes")
         plt.ylabel("Rewards Per Step")
         plt.title("Training Progress - RPS")
-        plt.ylim(-0.01, 0.2)
+        # plt.ylim(-0.01, 0.2)
         plt.legend()
 
         plt.savefig("training_progress.png")

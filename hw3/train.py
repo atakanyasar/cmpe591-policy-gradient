@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import time
 from collections import deque
 from torch.multiprocessing import Process, Pipe
 from homework3 import Hw3Env
@@ -44,6 +45,8 @@ def train(config: Config, model: REINFORCE, tracker: Tracker):
     agent = Agent(model)  # Define agent in main process
 
     try:
+        processes = list()
+
         for episode in range(config.num_episodes):
             processes = []  # Reset process list each episode
             
@@ -56,6 +59,11 @@ def train(config: Config, model: REINFORCE, tracker: Tracker):
 
             # Collect trajectories and check for errors
             for env_id, conn in enumerate(parent_conns):
+                start_time = time.time()
+                while not conn.poll(360):  # Wait up to 6 minutes
+                    if time.time() - start_time > 360:
+                        raise RuntimeError(f"Timeout: Worker {env_id} did not respond within 6 minutes.")
+
                 trajectory, cumulative_reward, error = conn.recv()
                 tracker.end_timer(env_id)
 
@@ -108,6 +116,8 @@ if __name__ == "__main__":
     try:
         train(config, model, tracker)
     except KeyboardInterrupt:
+        pass
+    finally:
         print("Training interrupted")
         tracker.save_model(model)
         tracker.plot_results()

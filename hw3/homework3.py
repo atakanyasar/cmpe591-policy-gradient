@@ -10,7 +10,7 @@ class Hw3Env(environment.BaseEnv):
         super().__init__(**kwargs)
         self._delta = 0.05
         self._goal_thresh = 0.075  # easier goal detection
-        self._max_timesteps = 300  # allow more steps
+        self._max_timesteps = 150  # allow more steps
         self._prev_obj_pos = None  # track object movement
 
     def _create_scene(self, seed=None):
